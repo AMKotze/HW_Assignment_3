@@ -1,0 +1,197 @@
+﻿@model HW_Assignment_3.Models.CombinedReport
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.debug.js"></script>
+<script src="https://unpkg.com/jspdf-autotable@3.5.13/dist/jspdf.plugin.autotable.js"></script>
+
+
+@{
+	ViewBag.Title = "ReportIndex";
+}
+
+<body>
+	<h2>ReportIndex</h2>
+
+	<h3>Top 10 Students</h3>
+	<table id="tableR" class="table table-striped">
+		<tr>
+			<th></th>
+			<th>Name</th>
+			<th>Surname</th>
+			<th>Class</th>
+			<th>Points</th>
+
+		</tr>
+		@for (int i = 0; i < Model.StudentNames.Count; i++)
+		{
+			<tr>
+				<td>@(i + 1)</td>
+				<td>@Model.StudentNames[i]</td>
+				<td>@Model.StudentSurnames[i]</td>
+				<td>@Model.StudentClasses[i]</td>
+				<td>@Model.Points[i]</td>
+			</tr>
+		}
+	</table>
+
+
+	<h3 style="margin-top: 40px">5 Most Popular Book Type</h3>
+	<div id="RChart">
+		<canvas id="myChart" width="200" height="100"></canvas>
+	</div>
+
+
+	<h3 style="margin-top: 40px">Analysis of Type chart and Student table data: </h3>
+	<h4>Types chart analysis:</h4>
+	<ul>
+		<li>The most popular book type is a journal.</li>
+		<li>This shows that the we must purchase more journal book types.</li>
+		<li>We can also look into more diverse journal collections to include in our library.</li>
+	</ul>
+	<br />
+	<h4>Student table analysis:</h4>
+	<ul>
+		<li>The top student is Acomb Harris from Class 9D with 999 points.</li>
+		<li>Two other students also have those points, but the students are ordered according to the numer of books read.</li>
+		<li>A reward program can be set up to reward the top 5 students with the most points.</li>
+		<li>The top students with the most points will also get the chance to add a book to our library of their choosing.</li>
+	</ul>
+	<br />
+	<br />
+	<label for="pdfFileName">Enter File Name: </label>
+	<input type="text" id="pdfFileName" value="">
+	<br />
+	<button id="reportPdf" type="submit" class="byn btn-secondary" style="margin-top:10px; margin-bottom: 10px; background-color: green; border-radius:10px">Save Report</button>
+	<br />
+
+	<h3 style="margin-top: 40px">Archive</h3>
+	<table id="downloadedPdfs" class="table table-striped">
+		<thead>
+			<tr>
+				<th>File Name</th>
+				<th>Download File</th>
+				<th>Delete File</th>
+			</tr>
+		</thead>
+		<tbody>
+		</tbody>
+	</table>
+</body>
+
+@section scripts {
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+	<script>
+   var ctx = document.getElementById('myChart').getContext('2d');
+        var chartData = {
+            labels: @Html.Raw(Json.Encode(Model.TypeNames)),
+            datasets: [{
+                label: 'Borrow Count',
+                data: @Html.Raw(Json.Encode(Model.BorrowCounts)),
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        };
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: chartData,
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+		});
+
+		function populateDownloadedPdfTable() {
+			const downloadedPdfs = JSON.parse(localStorage.getItem('downloadedPdfs')) || [];
+			const downloadedPdfsTable = document.getElementById('downloadedPdfs').querySelector('tbody');
+
+			downloadedPdfsTable.innerHTML = '';
+
+			downloadedPdfs.forEach(pdfFileName => {
+				const row = downloadedPdfsTable.insertRow();
+
+				const fileNameCell = row.insertCell(0);
+				fileNameCell.textContent = pdfFileName;
+
+				const downloadButtonCell = row.insertCell(1);
+				const downloadButton = document.createElement('button');
+				downloadButton.textContent = 'Download';
+				downloadButton.setAttribute('data-fileName', pdfFileName);
+				downloadButton.onclick = function () {
+					const pdfFileName = downloadButton.getAttribute('data-fileName');
+					const downloadLink = document.createElement('a');
+					downloadLink.href = '@Url.Action("DownloadPdf", "Report", new { fileName = "" })' + pdfFileName;
+					downloadLink.download = pdfFileName;
+					downloadLink.style.display = 'none';
+					document.body.appendChild(downloadLink);
+					downloadLink.click();
+					document.body.removeChild(downloadLink);
+				};
+				downloadButtonCell.appendChild(downloadButton);
+
+				const deleteButtonCell = row.insertCell(2);
+				const deleteButton = document.createElement('button');
+				deleteButton.textContent = 'Delete';
+				deleteButton.onclick = function () {
+					// Add the logic to delete the PDF file here
+					const index = downloadedPdfs.indexOf(pdfFileName);
+					if (index !== -1) {
+						downloadedPdfs.splice(index, 1);
+						localStorage.setItem('downloadedPdfs', JSON.stringify(downloadedPdfs));
+						// Remove the table row from the view
+						row.remove();
+					}
+				};
+				deleteButtonCell.appendChild(deleteButton);
+			});
+		}
+		populateDownloadedPdfTable();
+
+		document.getElementById('reportPdf').addEventListener('click', function () {
+			const docs = new jsPDF();
+
+			const pdfFileName = document.getElementById('pdfFileName').value || 'Report';
+
+			function addChartToPDF() {
+				const chartImage = ctx.canvas.toDataURL('image/jpeg', 1.0);
+				docs.addImage(chartImage, 'JPEG', 10, 100, 190, 100);
+			}
+
+			const table = document.getElementById('tableR');
+
+			docs.autoTable({ html: table });
+
+			addChartToPDF();
+
+			const ulText = [
+				"Analysis of Type chart and Student table data: ",
+				"Types chart analysis:",
+				"The most popular book type is a journal.",
+				"This shows that we must purchase more journal book types.",
+				"We can also look into more diverse journal collections to include in our library.",
+				"",
+				"Student table analysis:",
+				"The top student is Acomb Harris from Class 9D with 999 points.",
+				"Two other students also have those points, but the students are ordered according to the number of books read.",
+				"A reward program can be set up to reward the top 5 students with the most points.",
+				"The top students with the most points will also get the chance to add a book to our library of their choosing."
+			];
+
+			docs.text(10, 220, ulText);
+
+			docs.save(pdfFileName + '');
+
+			const downloadedPdfs = JSON.parse(localStorage.getItem('downloadedPdfs')) || [];
+			downloadedPdfs.push(pdfFileName + '.pdf');
+			localStorage.setItem('downloadedPdfs', JSON.stringify(downloadedPdfs));
+
+			populateDownloadedPdfTable();
+		});
+
+	</script>
+}
+

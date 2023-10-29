@@ -1,0 +1,278 @@
+﻿@model HW_Assignment_3.Models.MainVM
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery-latest.ja"></script>
+
+@{
+	ViewBag.Title = "MainIndex";
+}
+
+@using PagedList.Mvc
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<style>
+	body {
+		background-image: url('../Content/MyStyle/mai.jpg');
+		background-size: inherit;
+	}
+
+	.ul.pagination {
+		display: inline-block;
+		padding: 0;
+		margin: 0;
+	}
+
+	ul.pagination li {
+		display: inline;
+	}
+
+		ul.pagination li a {
+			color: black;
+			float: left;
+			padding: 8px 16px;
+			text-decoration: none;
+			transition: background-color .3s;
+		}
+
+			ul.pagination li a.active {
+				background-color: #4CAF50;
+				color: white;
+			}
+
+			ul.pagination li a:hover:not(.active) {
+				background-color: #ddd;
+			}
+
+	* {
+		box-sizing: border-box;
+	}
+
+	.row {
+		display: flex;
+	}
+
+	.column {
+		flex: 50%;
+		padding: 5px;
+	}
+
+	h2 {
+		color:ghostwhite;
+	}
+</style>
+
+
+<div class="row">
+	<div class="column">
+		<div class="d-flex">
+			<div class="flex-fill">
+				<h2>Author</h2>
+
+				<p>
+					<button type="button" class="btn btn-info create-link" data-url="@Url.Action("Create", "authors")">
+						Create Author
+					</button>
+					@*<a href="#" class=" btn btn-md-primary create-link" data-url="@Url.Action("Create", "ToDoLists")">Create New Sample Entity</a>*@
+				</p>
+
+				<table class="table table-striped table-bordered" style="width:100%; border-collapse: collapse">
+					<tr>
+						<th>
+							Name
+						</th>
+						<th>
+							Surname
+						</th>
+						<th>
+							CRUD Buttons
+						</th>
+					</tr>
+					@foreach (var item in Model.Authors)
+					{
+						<tr style="border-collapse: collapse">
+							<td>
+								@Html.DisplayFor(modelItem => item.name)
+							</td>
+							<td>
+								@Html.DisplayFor(modelItem => item.surname)
+							</td>
+
+							<td class="text-end">
+								<!-- Add text-end class here -->
+								<a href="#" class="btn btn-primary edit-link" data-url="@Url.Action("Edit", "authors", new { id = item.authorId })">Edit</a>
+								<a href="#" class="btn btn-warning details-link" data-url="@Url.Action("Details", "authors", new { id = item.authorId })">Details</a>
+								<a href="#" class="btn btn-danger delete-link" data-url="@Url.Action("Delete", "authors", new { id = item.authorId })">Delete</a>
+							</td>
+						</tr>
+					}
+				</table>
+				<div class="pagination" style="background-color: white">
+					@Html.PagedListPager(Model.Authors, page => Url.Action("MainIndex", new { authorsPage = page }))
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<div class="row">
+	<div class="column">
+		<div class="d-flex">
+			<div class="flex-fill">
+				<h2>Types</h2>
+
+				<p>
+					<button type="button" class="btn btn-info create-lookup-link" data-url="@Url.Action("Create", "types")">
+						Add a Type
+					</button>
+					@*<a href="#" class="create-lookup-link" data-url="@Url.Action("Create", "ListItems")">Create New Sample LookUp</a>*@
+				</p>
+
+				<table class="table table-striped table-bordered" style="width: 100%; border-collapse: collapse">
+					<tr>
+						<th>
+							Name
+						</th>
+						<th>
+							CRUD Buttons
+						</th>
+					</tr>
+					@foreach (var item in Model.Types)
+					{
+						<tr>
+							<td>
+								@Html.DisplayFor(modelItem => item.name)
+							</td>
+							<td class="text-end">
+								<!-- Add text-end class here -->
+								<a href="#" class="btn btn-primary edit-link" data-url="@Url.Action("Edit", "types", new { id = item.typeId })">Edit</a>
+								<a href="#" class="btn btn-warning details-link" data-url="@Url.Action("Details", "types", new { id = item.typeId })">Details</a>
+								<a href="#" class="btn btn-danger delete-link" data-url="@Url.Action("Delete", "types", new { id = item.typeId })">Delete</a>
+							</td>
+						</tr>
+					}
+				</table>
+				<div class="pagination" style="background-color: white">
+					@Html.PagedListPager(Model.Types, page => Url.Action("MainIndex", new { typesPage = page }))
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="column">
+			<div class="d-flex">
+				<div class="flex-fill">
+					<h2>Borrows</h2>
+
+					<p>
+						<button type="button" class="btn btn-info create-p-link" data-url="@Url.Action("Create", "borrows")">
+							Borrow Book
+						</button>
+						@*<a href="#" class="create-p-link" data-url="@Url.Action("Create", "ListItemPriorities")">Create New Sample LookUp</a>*@
+					</p>
+
+					<table class="table table-striped table-bordered" style="width: 100%; border-collapse: collapse">
+						<tr>
+							<th>
+								Student
+							</th>
+							<th>
+								Book
+							</th>
+							<th>
+								Taken Date
+							</th>
+							<th>
+								Brought Date
+							</th>
+							<th>
+								CRUD Buttons
+							</th>
+						</tr>
+						@foreach (var item in Model.Borrows)
+						{
+							<tr>
+								<td>
+									@Html.DisplayFor(modelItem => item.students.name)
+								</td>
+								<td>
+									@Html.DisplayFor(modelItem => item.books.name)
+								</td>
+								<td>
+									@Html.DisplayFor(modelItem => item.takenDate)
+								</td>
+								<td>
+									@Html.DisplayFor(modelItem => item.broughtDate)
+								</td>
+								<td class="text-end">
+									<!-- Add text-end class here -->
+									<a href="#" class="btn btn-primary edit-link" data-url="@Url.Action("Edit", "borrows", new { id = item.borrowId })">Edit</a>
+									<a href="#" class="btn btn-warning details-link" data-url="@Url.Action("Details", "borrows", new { id = item.borrowId })">Details</a>
+									<a href="#" class="btn btn-danger delete-link" data-url="@Url.Action("Delete", "borrows", new { id = item.borrowId })">Delete</a>
+								</td>
+							</tr>
+						}
+					</table>
+					<div class="pagination" style="background-color: white">
+						@Html.PagedListPager(Model.Borrows, page => Url.Action("MainIndex", new { borrowsPage = page }))
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="myModal" class="modal fade" tabindex="-1">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Sample Async CRUD</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body" id="modal-content">
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script>
+	$(function () {
+		// Function to handle Edit link click event in the Combined View and Details modal
+		$(".edit-link, .edit-link-in-modal").click(function (e) {
+			e.preventDefault();
+			var url = $(this).data("url");
+
+			$.get(url, function (data) {
+				$("#modal-content").empty();
+				$("#modal-content").html(data);
+				$("#myModal").modal("show");
+			});
+		});
+
+		// Function to handle form submission within the modal
+		$("#modal-content").on("submit", "form", function (e) {
+			e.preventDefault();
+			var form = $(this);
+			var url = form.attr("action");
+			var formData = form.serialize();
+
+			$.post(url, formData, function (data) {
+				$("#myModal").modal("hide");
+				location.reload();
+			});
+		});
+
+		// Function to handle other links (details, delete, create) within the modal
+		$(".details-link, .delete-link, .create-link, .create-lookup-link, .create-p-link").click(function (e) {
+			e.preventDefault();
+			var url = $(this).data("url");
+
+			$.get(url, function (data) {
+				$("#modal-content").empty();
+				$("#modal-content").html(data);
+				$("#myModal").modal("show");
+			});
+		});
+	});
+</script>
